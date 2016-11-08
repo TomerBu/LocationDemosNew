@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<gpx version="1.1" creator="Xcode">
+    
+    <wpt lat="31.3690897" lon="34.8033">
+        <name>Lehavim</name>
+        <time>2016-5-16T18:00:37Z</time>
+    </wpt>
+    
+    <wpt lat="31.3690897" lon="34.8044">
+        <name>Lehavim</name>
+        <time>2016-5-16T18:00:38Z</time>
+    </wpt>
+
+    <wpt lat="31.3690897" lon="34.8055">
+        <name>Lehavim</name>
+        <time>2016-5-16T18:00:39Z</time>
+    </wpt>
+
+    <wpt lat="31.3690897" lon="34.8066">
+        <name>Lehavim</name>
+        <time>2016-5-16T18:00:40Z</time>
+    </wpt>
+ 
+    <wpt lat="31.3690897" lon="34.8077">
+        <name>Lehavim</name>
+        <time>2016-5-16T18:00:41Z</time>
+    </wpt>
+    
+</gpx>

@@ -1,9 +1,9 @@
 <resources>
     <!--
-    https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=11:19:83:45:D1:10:CE:E9:2D:23:37:6E:F1:16:57:11:27:7A:91:26%3Btomerbu.edu.locationdemos
+    https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=7A:10:AD:77:0C:6F:4E:C3:BE:4D:27:DF:CD:88:0B:85:19:D9:D8:7D%3Btomerbu.edu.locationdemos
 
     -->
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
-        AIzaSyAm5FuwIMeJO0ZZ9MBweOp5Ei5Yzyc4ON4
+        AIzaSyDhRNlYMNnI4xgYRxzj8Gpwz_0ofCIfSU4
     </string>
 </resources>

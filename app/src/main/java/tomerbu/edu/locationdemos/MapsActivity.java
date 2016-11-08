@@ -1,20 +1,39 @@
 package tomerbu.edu.locationdemos;
 
+import android.Manifest;
+import android.app.DownloadManager;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
+import android.view.View;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -22,9 +41,13 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks {
+import java.io.File;
+import java.io.IOException;
+
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final int REQUEST_CODE_LOCATION = 10;
+    private static final int RC_WRITE_STORAGE = 9;
     private ProgressDialog dialog;
     private GoogleMap map;
     private GoogleApiClient mApiClient;
@@ -37,9 +60,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = new SupportMapFragment();
-
-        getSupportFragmentManager().beginTransaction().
-                replace(R.id.mapContainer, mapFragment).commit();
+        if (savedInstanceState == null)
+            getSupportFragmentManager().beginTransaction().
+                    replace(R.id.mapContainer, mapFragment).commit();
 
         mapFragment.getMapAsync(this);
 
@@ -48,16 +71,74 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         initRadioGroup();
 
         initApiClient();
+
+        // try {
+        // download();
+        requestLocationPermission();
+        // } //catch (IOException e) {
+        //  e.printStackTrace();
+        //  }
+    }
+
+    private void download() throws IOException {
+/*        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, RC_WRITE_STORAGE);
+            return;
+        }*/
+
+        DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        String ref = "http://www.e-reading.club/bookreader.php/142063/Android_-_a_programmers_guide.pdf";
+        Uri Download_Uri = Uri.parse(ref);
+        DownloadManager.Request request = new DownloadManager.Request(Download_Uri);
+
+        //Restrict the types of networks over which this download may proceed.
+        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE);
+        //Set whether this download may proceed over a roaming connection.
+        request.setAllowedOverRoaming(false);
+        //Set the title of this download, to be displayed in notifications.
+        request.setTitle("Demo Book");
+        //Set the local destination for the downloaded file to a path within the application's external files directory
+        //  request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS,"Android_-_a_programmers_guide.pdf");
+
+
+        File storage = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File f = File.createTempFile("DemoBook", ".pdf", storage);
+        final Uri dlUri = FileProvider.getUriForFile(this,
+                "tomerbu.edu.locationdemos.fileprovider",
+                f);
+
+        request.setDestinationUri(Uri.fromFile(f));
+        //ParcelFileDescriptor descriptor = getContentResolver().openFileDescriptor(dlUri, "rw");
+
+        //Enqueue a new download and same the referenceId
+        Long downloadReference = downloadManager.enqueue(request);
+
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Toast.makeText(MapsActivity.this, "df", Toast.LENGTH_SHORT).show();
+                Intent intent1 = new Intent(Intent.ACTION_VIEW, dlUri);
+                ComponentName componentName;
+                if ((componentName = intent.resolveActivity(getPackageManager())) != null) {
+                    startActivity(intent1);
+                    String className = componentName.getClassName();
+                    Log.d(Constants.TAG, className);
+                }
+            }
+        };
+
+        registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
 
     private void initApiClient() {
         GoogleApiClient.Builder builder = new GoogleApiClient.Builder(this);
 
         builder.addApi(LocationServices.API).
+                enableAutoManage(this, this).
                 addConnectionCallbacks(this);
 
         mApiClient = builder.build();
-        mApiClient.connect();
+        // mApiClient.connect();
     }
 
     private void initRadioGroup() {
@@ -110,7 +191,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         googleMap.addMarker(new MarkerOptions().position(nessCollege));
 
         //Move the camera (With Animation) To college coordinates, Zoom 17
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(nessCollege, 17));
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(nessCollege, 17));
     }
 
     @Override
@@ -120,20 +201,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void requestLocation() {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED) {
-            //Request the Location Permission
-            ActivityCompat.requestPermissions(this,
-                    new String[]{
-                            android.Manifest.permission.ACCESS_FINE_LOCATION
-                    },
-                    REQUEST_CODE_LOCATION);
-            //Get out of this method, Since we don't have the permission yet.
+        requestLocationPermission();
+        //If we don't have permission, we don't get here
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        //If we don't have permission, we don't get here
 
         //Get the last known location. May be null.!!!
         Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mApiClient);
@@ -142,20 +214,70 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mLocationRequest.setInterval(1000 * 10).
                 setFastestInterval(1000).
                 setMaxWaitTime(1000).
-                setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);/*GPS*/
 
+
+        LocationSettingsRequest settingsRequest = new LocationSettingsRequest.Builder().addLocationRequest(mLocationRequest).build();
+        PendingResult<LocationSettingsResult> locationSettingsResultPendingResult = LocationServices.SettingsApi.checkLocationSettings(mApiClient, settingsRequest);
+
+        locationSettingsResultPendingResult.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+            @Override
+            public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
+                if (locationSettingsResult.getStatus().getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                    try {
+                        locationSettingsResult.getStatus().startResolutionForResult(MapsActivity.this, REQUEST_CODE_LOCATION);
+                    } catch (IntentSender.SendIntentException e) {
+                        Log.e(Constants.TAG, e.getLocalizedMessage());
+                    }
+                } else {
+                    requestLocationUpdates();
+                }
+            }
+        });
+
+/*        ResultReceiver resultReceiver = new ResultReceiver(null){
+            @Override
+            protected void onReceiveResult(int resultCode, Bundle resultData) {
+                super.onReceiveResult(resultCode, resultData);
+            }
+        };
+
+        resultReceiver.send(1, new Bundle());
+
+        Intent intent = new Intent();
+        intent.putExtra("talkToMe", resultReceiver);*/
+
+
+
+    }
+
+    private void requestLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mApiClient, mLocationRequest, new LocationListener() {
                     @Override
                     public void onLocationChanged(Location location) {
-                         LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
-                         map.addMarker(new MarkerOptions().position(loc));
-                         map.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 16));
+                        LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+                        map.addMarker(new MarkerOptions().position(loc));
+                        map.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 19));
                     }
                 }
         );
+    }
 
-
+    private void requestLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            //Request the Location Permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{
+                            android.Manifest.permission.ACCESS_FINE_LOCATION
+                    },
+                    REQUEST_CODE_LOCATION);
+            //Get out of this method, Since we don't have the permission yet.
+        }
     }
 
     @Override
@@ -164,14 +286,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         //If we got the permission:
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED
-                && requestCode==REQUEST_CODE_LOCATION){
+        if (requestCode == REQUEST_CODE_LOCATION && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
             requestLocation();
+        }
+        //If we got the permission:
+        if (requestCode == RC_WRITE_STORAGE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
+            try {
+                download();
+            } catch (IOException e) {
+                Log.e(Constants.TAG, e.getLocalizedMessage());
+            }
         }
     }
 
     @Override
     public void onConnectionSuspended(int i) {
 
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.e(Constants.TAG, connectionResult.getErrorMessage());
+    }
+
+    public void download(View view) {
+        try {
+            download();
+        } catch (IOException e) {
+            Log.e(Constants.TAG, e.getLocalizedMessage());
+        }
     }
 }
