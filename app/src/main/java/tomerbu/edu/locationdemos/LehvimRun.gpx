@@ -11,19 +11,48 @@
         <time>2016-5-16T18:00:38Z</time>
     </wpt>
 
-    <wpt lat="31.3690897" lon="34.8055">
-        <name>Lehavim</name>
-        <time>2016-5-16T18:00:39Z</time>
+    <wpt lat="31.3690897" lon="34.80441">
+        <name>Lehavim-Dwell</name>
+        <time>2016-5-16T18:00:42Z</time>
     </wpt>
 
-    <wpt lat="31.3690897" lon="34.8066">
+    <wpt lat="31.3690897" lon="34.8044">
         <name>Lehavim</name>
-        <time>2016-5-16T18:00:40Z</time>
+        <time>2016-5-16T18:00:45Z</time>
     </wpt>
- 
-    <wpt lat="31.3690897" lon="34.8077">
+
+    <wpt lat="31.3690897" lon="34.8059">
         <name>Lehavim</name>
-        <time>2016-5-16T18:00:41Z</time>
+        <time>2016-5-16T18:00:46Z</time>
     </wpt>
-    
+
+    <wpt lat="31.3690897" lon="34.8088">
+        <name>Lehavim</name>
+        <time>2016-5-16T18:00:47Z</time>
+    </wpt>
+
+    <wpt lat="31.3690897" lon="34.8099">
+        <name>Lehavim</name>
+        <time>2016-5-16T18:00:48Z</time>
+    </wpt>
+
+    <wpt lat="31.3690897" lon="34.8111">
+        <name>Lehavim</name>
+        <time>2016-5-16T18:00:49Z</time>
+    </wpt>
+
+    <wpt lat="31.3690897" lon="34.8122">
+        <name>Lehavim</name>
+        <time>2016-5-16T18:00:50Z</time>
+    </wpt>
+
+    <wpt lat="31.3690897" lon="34.8133">
+        <name>Lehavim</name>
+        <time>2016-5-16T18:00:51Z</time>
+    </wpt>
+
+    <wpt lat="31.3690897" lon="34.8144">
+        <name>Lehavim</name>
+        <time>2016-5-16T18:00:52Z</time>
+    </wpt>
 </gpx>

@@ -63,10 +63,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = new SupportMapFragment();
-        if (savedInstanceState == null)
+        SupportMapFragment mapFragment = null;
+        if (savedInstanceState == null) {
+            mapFragment = new SupportMapFragment();
+
             getSupportFragmentManager().beginTransaction().
-                    replace(R.id.mapContainer, mapFragment).commit();
+                    replace(R.id.mapContainer, mapFragment, "Map").commit();
+        } else {
+            mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentByTag("Map");
+        }
 
         mapFragment.getMapAsync(this);
 
@@ -251,10 +256,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Intent intent = new Intent();
         intent.putExtra("talkToMe", resultReceiver);*/
 
-        Geofence geofence = new Geofence.Builder().setCircularRegion(31.3690897, 34.8044, 100).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER|Geofence.GEOFENCE_TRANSITION_EXIT).build();
+        Geofence geofence = new Geofence.Builder().
+                setRequestId("GeofenceRequestID").
+                setExpirationDuration(Geofence.NEVER_EXPIRE).
+                setCircularRegion(31.3690897, 34.8044, 100)
+                //.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL) /*Either dwell or Enter|Exit, can't do both...*/
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |Geofence.GEOFENCE_TRANSITION_EXIT)
+                .setLoiteringDelay(1 * 1000)
+                .build();
      /*   List<Geofence> geofences = new ArrayList<>();
         geofences.add(geofence);*/
-        GeofencingRequest geofencingRequest =  new GeofencingRequest.Builder().addGeofence(geofence).setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER).build();
+        GeofencingRequest geofencingRequest = new GeofencingRequest.Builder().addGeofence(geofence).setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER).build();
         Intent intent = new Intent(this, MyGeoFenceService.class);
         PendingIntent pendingIntent = PendingIntent.getService(this, REQUEST_CODE_GEOFENCE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         LocationServices.GeofencingApi.addGeofences(mApiClient, geofencingRequest, pendingIntent);
@@ -271,8 +283,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void onLocationChanged(Location location) {
                         LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
-                        map.addMarker(new MarkerOptions().position(loc));
-                        map.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 19));
+
+
+                        if (map != null) {
+
+                            map.addMarker(new MarkerOptions().position(loc));
+                            map.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 19));
+                        }
+
                     }
                 }
         );

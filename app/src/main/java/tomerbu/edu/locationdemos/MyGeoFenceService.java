@@ -40,7 +40,5 @@ public class MyGeoFenceService extends IntentService {
                 Log.d(Constants.TAG, "Dwell" + location.toString());
                 break;
         }
-
-
     }
 }
