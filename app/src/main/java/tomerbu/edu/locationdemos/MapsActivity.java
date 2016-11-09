@@ -2,6 +2,7 @@ package tomerbu.edu.locationdemos;
 
 import android.Manifest;
 import android.app.DownloadManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -28,6 +29,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -48,6 +51,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final int REQUEST_CODE_LOCATION = 10;
     private static final int RC_WRITE_STORAGE = 9;
+    private static final int REQUEST_CODE_GEOFENCE = 11;
     private ProgressDialog dialog;
     private GoogleMap map;
     private GoogleApiClient mApiClient;
@@ -247,6 +251,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Intent intent = new Intent();
         intent.putExtra("talkToMe", resultReceiver);*/
 
+        Geofence geofence = new Geofence.Builder().setCircularRegion(31.3690897, 34.8044, 100).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER|Geofence.GEOFENCE_TRANSITION_EXIT).build();
+     /*   List<Geofence> geofences = new ArrayList<>();
+        geofences.add(geofence);*/
+        GeofencingRequest geofencingRequest =  new GeofencingRequest.Builder().addGeofence(geofence).setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER).build();
+        Intent intent = new Intent(this, MyGeoFenceService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(this, REQUEST_CODE_GEOFENCE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        LocationServices.GeofencingApi.addGeofences(mApiClient, geofencingRequest, pendingIntent);
 
 
     }
